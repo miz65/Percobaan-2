@@ -404,3 +404,155 @@
     </script>
 </body>
 </html>
+// server.js
+const express = require('express');
+const midtransClient = require('midtrans-client');
+const app = express();
+
+app.use(express.json());
+
+// Konfigurasi Midtrans
+let snap = new midtransClient.Snap({
+    isProduction: false, // true untuk production
+    serverKey: 'YOUR_SERVER_KEY',
+    clientKey: 'YOUR_CLIENT_KEY'
+});
+
+// Endpoint create transaction
+app.post('/api/create-transaction', async (req, res) => {
+    try {
+        const { order_id, amount, customer_name, item_name } = req.body;
+        
+        let parameter = {
+            "transaction_details": {
+                "order_id": order_id,
+                "gross_amount": amount
+            },
+            "item_details": [{
+                "id": "item1",
+                "price": amount,
+                "quantity": 1,
+                "name": item_name
+            }],
+            "customer_details": {
+                "first_name": customer_name
+            },
+            "credit_card": {
+                "secure": true
+            },
+            "enabled_payments": ["gopay", "danain_online"] // Aktifkan GoPay & DANA
+        };
+
+        const transaction = await snap.createTransaction(parameter);
+        
+        res.json({
+            token: transaction.token,
+            redirect_url: transaction.redirect_url
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Webhook untuk notifikasi pembayaran
+app.post('/api/payment-notification', (req, res) => {
+    const notification = req.body;
+    
+    // Verifikasi dengan Midtrans
+    snap.transaction.notification(notification)
+        .then(statusResponse => {
+            const orderId = statusResponse.order_id;
+            const transactionStatus = statusResponse.transaction_status;
+            const paymentType = statusResponse.payment_type;
+            
+            console.log(`Payment ${transactionStatus} for order ${orderId} via ${paymentType}`);
+            
+            // Update database Anda di sini
+            if (transactionStatus === 'settlement') {
+                // Kirim item ke game user
+                console.log('Pembayaran sukses!');
+            } else if (transactionStatus === 'pending') {
+                console.log('Menunggu pembayaran...');
+            } else if (transactionStatus === 'expire') {
+                console.log('Pembayaran expired');
+            }
+            
+            res.status(200).send('OK');
+        });
+});
+
+app.listen(3000, () => console.log('Server running on port 3000'));
+// API GoPay langsung
+const gopayPayment = async (orderId, amount) => {
+    const response = await fetch('https://api.gojekapi.com/v3/payments', {
+        method: 'POST',
+        headers: {
+            'Authorization': 'Bearer YOUR_GOJEK_TOKEN',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            amount: amount,
+            order_id: orderId,
+            payment_type: "gopay"
+        })
+    });
+    return await response.json();
+};
+// API DANA langsung
+const danaPayment = async (orderId, amount, customer) => {
+    const response = await fetch('https://api.dana.id/v1/payments', {
+        method: 'POST',
+        headers: {
+            'Client-Id': 'YOUR_CLIENT_ID',
+            'Request-Id': orderId,
+            'Signature': 'GENERATED_SIGNATURE'
+        },
+        body: JSON.stringify({
+            order: {
+                orderId: orderId,
+                amount: amount,
+                goodsName: "Top Up Game"
+            },
+            customer: customer
+        })
+    });
+    return await response.json();
+};
+CREATE TABLE transactions (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id VARCHAR(100) UNIQUE,
+    user_id VARCHAR(50),
+    game_name VARCHAR(50),
+    amount DECIMAL(10,2),
+    payment_method ENUM('gopay', 'dana', 'other'),
+    status ENUM('pending', 'success', 'failed', 'expired'),
+    payment_url TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE game_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    game_name VARCHAR(50),
+    item_name VARCHAR(100),
+    amount DECIMAL(10,2),
+    description TEXT
+);
+{
+  "name": "game-topup",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "^4.18.0",
+    "midtrans-client": "^1.3.1",
+    "mysql2": "^3.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}
+MIDTRANS_SERVER_KEY=sb-your-server-key
+MIDTRANS_CLIENT_KEY=sb-your-client-key
+DATABASE_URL=mysql://user:pass@localhost:3306/game_topup
+PORT=3000
+NODE_ENV=production
