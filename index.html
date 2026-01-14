@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Top Up Game</title>
+    <script type="text/javascript"
+        src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key="YOUR_CLIENT_KEY"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .game-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .game-option {
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .game-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .game-option img {
+            width: 50px;
+            height: 50px;
+            margin-bottom: 10px;
+        }
+
+        .nominal-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .nominal-btn {
+            padding: 12px;
+            background: #f5f5f5;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .nominal-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nominal-btn.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .payment-methods {
+            margin-bottom: 30px;
+        }
+
+        .payment-title {
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .payment-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .payment-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-option:hover {
+            border-color: #667eea;
+        }
+
+        .payment-option.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .payment-option img {
+            height: 30px;
+            margin-bottom: 5px;
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .btn-pay:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-pay:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🕹️ Top Up Game</h1>
+        
+        <!-- Pilih Game -->
+        <div class="form-group">
+            <label>Pilih Game:</label>
+            <div class="game-options">
+                <div class="game-option" data-game="mobile-legends">
+                    <img src="https://cdn-icons-png.flaticon.com/512/871/871366.png" alt="Mobile Legends">
+                    <div>Mobile Legends</div>
+                </div>
+                <div class="game-option" data-game="free-fire">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2972/2972543.png" alt="Free Fire">
+                    <div>Free Fire</div>
+                </div>
+                <div class="game-option" data-game="pubg">
+                    <img src="https://cdn-icons-png.flaticon.com/512/732/732100.png" alt="PUBG">
+                    <div>PUBG Mobile</div>
+                </div>
+                <div class="game-option" data-game="valorant">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3612/3612569.png" alt="Valorant">
+                    <div>Valorant</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input User ID -->
+        <div class="form-group">
+            <label for="userId">User ID Game:</label>
+            <input type="text" id="userId" placeholder="Masukkan User ID" required>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email untuk konfirmasi:</label>
+            <input type="email" id="email" placeholder="email@example.com" required>
+        </div>
+
+        <!-- Pilih Nominal -->
+        <div class="form-group">
+            <label>Pilih Nominal:</label>
+            <div class="nominal-options">
+                <button class="nominal-btn" data-amount="10000">Rp 10.000</button>
+                <button class="nominal-btn" data-amount="25000">Rp 25.000</button>
+                <button class="nominal-btn" data-amount="50000">Rp 50.000</button>
+                <button class="nominal-btn" data-amount="75000">Rp 75.000</button>
+                <button class="nominal-btn" data-amount="100000">Rp 100.000</button>
+                <button class="nominal-btn" data-amount="150000">Rp 150.000</button>
+            </div>
+        </div>
+
+        <!-- Custom Nominal -->
+        <div class="form-group">
+            <label for="customAmount">Atau masukkan nominal custom:</label>
+            <input type="number" id="customAmount" placeholder="Rp 0" min="10000">
+        </div>
+
+        <!-- Pilih Metode Pembayaran -->
+        <div class="payment-methods">
+            <div class="payment-title">Pilih Metode Pembayaran:</div>
+            <div class="payment-options">
+                <div class="payment-option" data-method="gopay">
+                    <img src="https://www.freepnglogos.com/uploads/logo-gopay-png/gopay-logo-png-vector-download-0.png" alt="GoPay">
+                    <div>GoPay</div>
+                </div>
+                <div class="payment-option" data-method="dana">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/72/Logo_dana_blue.svg/2560px-Logo_dana_blue.svg.png" alt="DANA">
+                    <div>DANA</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tombol Bayar -->
+        <button class="btn-pay" onclick="processPayment()">
+            💳 Bayar Sekarang
+        </button>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Mempersiapkan pembayaran...</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedGame = 'mobile-legends';
+        let selectedAmount = 10000;
+        let selectedPayment = 'gopay';
+
+        // Pilih Game
+        document.querySelectorAll('.game-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.game-option').forEach(opt => 
+                    opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedGame = option.dataset.game;
+            });
+        });
+
+        // Pilih Nominal
+        document.querySelectorAll('.nominal-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.nominal-btn').forEach(b => 
+                    b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedAmount = parseInt(btn.dataset.amount);
+                document.getElementById('customAmount').value = '';
+            });
+        });
+
+        // Custom Amount
+        document.getElementById('customAmount').addEventListener('input', (e) => {
+            const value = parseInt(e.target.value) || 0;
+            if (value >= 10000) {
+                selectedAmount = value;
+                document.querySelectorAll('.nominal-btn').forEach(b => 
+                    b.classList.remove('selected'));
+            }
+        });
+
+        // Pilih Payment Method
+        document.querySelectorAll('.payment-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.payment-option').forEach(opt => 
+                    opt.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedPayment = option.dataset.method;
+            });
+        });
+
+        // Proses Pembayaran
+        async function processPayment() {
+            const userId = document.getElementById('userId').value;
+            const email = document.getElementById('email').value;
+            
+            if (!userId || !email) {
+                alert('Harap lengkapi data terlebih dahulu!');
+                return;
+            }
+
+            if (selectedAmount < 10000) {
+                alert('Minimum pembayaran Rp 10.000');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const orderId = 'TOPUP-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+                
+                // Kirim data ke backend
+                const response = await fetch('/api/create-transaction', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        amount: selectedAmount,
+                        customer_name: userId,
+                        item_name: `Top Up ${selectedGame}`,
+                        email: email,
+                        payment_method: selectedPayment
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.token) {
+                    // Redirect ke payment page Midtrans
+                    window.snap.pay(data.token, {
+                        onSuccess: function(result) {
+                            alert('Pembayaran berhasil! Diamond akan dikirim dalam 1-5 menit.');
+                        },
+                        onPending: function(result) {
+                            alert('Pembayaran pending. Silakan selesaikan pembayaran.');
+                        },
+                        onError: function(result) {
+                            alert('Pembayaran gagal. Silakan coba lagi.');
+                        },
+                        onClose: function() {
+                            alert('Anda menutup popup pembayaran tanpa menyelesaikan transaksi.');
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan. Silakan coba lagi.');
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Inisialisasi pilihan default
+        document.querySelector('.game-option').click();
+        document.querySelector('.nominal-btn').click();
+        document.querySelector('.payment-option').click();
+    </script>
+</body>
+</html>
